@@ -1,0 +1,95 @@
+<!DOCTYPE html> 
+<html xmlns:th="http://www.thymeleaf.org">
+<head> 
+<meta charset="UTF-8" /> 
+<title>Register User</title> 
+<link href="/css/register_style.css" th:href="@{/css/register_style.css}" rel="stylesheet" />
+	<script src="http://code.jquery.com/jquery-3.4.1.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+	<link rel="stylesheet"
+			href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+
+
+<script type="text/javascript">
+$(() => {
+	$('#registerBtn').on('click', () => {
+		let userName = $('form#registerForm input[name=userName]').val();
+		let password = $('form#registerForm input[name=password]').val();
+		let fullName = $('form#registerForm input[name=fullName]').val();
+	
+		if (userName === "" ){
+			//条件に一致する場合(メールアドレスが空の場合)
+			alert("ユーザーIDを入力してください");    //エラーメッセージを出力
+			return false;
+		} else if (password === ""){
+			//条件に一致する場合(メールアドレスが空の場合)
+			alert("パスワードを入力してください");    //エラーメッセージを出力
+			return false;
+		} else if (fullName === "" ){
+			//条件に一致する場合(メールアドレスが空の場合)
+			alert("フルネームを入力してください");    //エラーメッセージを出力
+			return false;
+		}
+
+		$.ajax({
+			type: 'POST',
+			url: '/ecsite/admin/user/duplicatedUserName',
+			data:  JSON.stringify({'userName': userName}),
+			datatype: 'json',
+			contentType: 'application/json',
+		})
+		.then((result) => {
+			if (result) {	// 重複あり
+				alert('ユーザー名が存在するため使用できません。');
+			} else {			// 重複なし
+				let jsonString = {
+						'userName': userName,
+						'password': password,
+						'fullName': fullName
+					};
+				$.ajax({
+					type: 'POST',
+					url: '/ecsite/admin/user/registeUser',
+					data: JSON.stringify(jsonString),
+					contentType: 'application/json',
+					datatype: 'json',
+					scriptcharset: 'utf-8'
+				})
+				.then((result) => {
+					alert('登録が完了しました。');
+					location.replace('/ecsite/admin/');
+				}, () => {
+					console.error('Error: ajax connection failed.');
+				});
+			}
+		}, () => {
+			alert('Error: ajax connection failed.');
+		});
+	});
+});
+
+</script>
+</head> 
+<body>
+<header>
+<h1>ユーザ登録画面</h1> 
+</header>
+<form id="registerForm" name="registerForm" method="post" >
+<div>
+<h3>ユーザーネーム</h3>
+<input type="text" id="userName" name= "userName" /> 
+</div>
+<div>
+<h3>パスワード</h3>
+<input type="password" id="password" name="password" /> 
+</div>
+<div>
+<h3>フルネーム</h3>
+<input type="text" id="fullName" name="fullName" /> 
+</div>
+<div>
+	<input type="button" id="registerBtn" value="登録">
+</div>
+ </form>
+</body> 
+ </html>
